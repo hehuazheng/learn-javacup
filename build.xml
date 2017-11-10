@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+    <target name="jlex_compile">
+        <java fork="true" classname="JLex.Main">
+            <arg value="dep/yylex.lex"/>
+            <classpath path="target/classes"/>
+        </java>
+    </target>
+    <target name="jlex_all" depends="jlex_compile">
+        <move file="dep/yylex.lex.java" tofile="src/main/java/sql/Yylex.java" />
+    </target>
+
+    <target name="javacup_compile">
+        <java fork="true" classname="java_cup.Main">
+            <arg value="dep/sql.cup"/>
+            <classpath path="dep/java-cup-11b.jar" />
+        </java>
+    </target>
+    <target name="javacup_all">
+        <move file="SimpleSqlParser.java" tofile="src/main/java/sql/SimpleSqlParser.java" />
+        <move file="SimpleSqlParserSym.java" tofile="src/main/java/sql/SimpleSqlParserSym.java" />
+    </target>
+</project>
