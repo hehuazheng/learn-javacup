@@ -1,0 +1,51 @@
+package calc;
+
+/* Simple +/-/* expression language; parser evaluates constant expressions on the fly*/
+import java_cup.runtime.*;
+import java.util.*;
+
+class SimpleSqlParser;
+
+parser code {:
+    // Connect this parser to a scanner!
+    List<String> tokenList = new ArrayList<>();
+    List<String> fromList = new ArrayList<>();
+
+    public List<String> getTokenList() { return tokenList; }
+    public List<String> getFromList() { return fromList; }
+:}
+
+/* Terminals (tokens returned by the scanner). */
+terminal   SELECT, FROM, AS, COMMA, LPAREN, RPAREN, JOIN, OP, AND, OR, ON, GROUP, ORDER, BY, ASC, DESC, WHERE, FUNC, INNER, LEFT, RIGHT, LIMIT;
+terminal   String TOKEN;
+
+/* Non terminals */
+non terminal           token_seq,select_token, select_expr,select_expr4,select_expr3,select_expr2,select_expr1, from_token, from_expr, and_expr,and_token, group_expr, order_expr, order_token ;
+
+select_expr  ::= select_expr4 | select_expr4 LIMIT TOKEN;
+select_expr4 ::= select_expr3 | select_expr3 ORDER BY order_expr;
+select_expr3 ::= select_expr2 | select_expr2 GROUP BY group_expr;
+select_expr2 ::= select_expr1 | select_expr1 WHERE TOKEN OP TOKEN;
+select_expr1 ::= SELECT token_seq FROM from_expr;
+
+from_expr  ::= from_expr JOIN from_token ON and_expr
+               | from_expr INNER JOIN from_token ON and_expr
+               | from_expr LEFT JOIN from_token ON and_expr
+               | from_expr RIGHT JOIN from_token ON and_expr
+               | from_token;
+from_token ::= TOKEN:t1 {:  fromList.add(t1); :}
+              | TOKEN:t1 AS TOKEN:t2 {: fromList.add(t1 + "." + t2); :}
+              ;
+and_expr  ::= and_expr AND and_token | and_expr OR and_token | and_token;
+and_token ::= TOKEN OP TOKEN;
+group_expr ::= group_expr COMMA TOKEN | TOKEN;
+order_expr ::= order_expr COMMA order_token | order_token;
+order_token ::= TOKEN | TOKEN ASC | TOKEN DESC;
+token_seq   ::= token_seq COMMA select_token
+                | select_token;
+select_token ::=  TOKEN:t {: tokenList.add(t); :}
+                  | FUNC LPAREN TOKEN:t RPAREN {: tokenList.add(t); :}
+                  | TOKEN:t AS TOKEN {: tokenList.add(t); :}
+                  | FUNC LPAREN TOKEN:t RPAREN AS TOKEN {: tokenList.add(t); :}
+                  ;
+
